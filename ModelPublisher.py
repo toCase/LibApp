@@ -1,3 +1,6 @@
+###
+# Клас моделі Видавці #
+##
 from PySide6.QtCore import QAbstractListModel, QModelIndex, Qt, Slot, Signal, QDateTime
 
 from DataWorker import DataWorker
@@ -5,17 +8,19 @@ from DataWorker import DataWorker
 
 class ModelPublishers(QAbstractListModel):
 
-    #role
+    #ролі
     R_ID = Qt.UserRole + 1
     R_NAME = Qt.UserRole + 2
     R_UPD = Qt.UserRole + 3
     R_USER = Qt.UserRole + 4
 
-    #model data
+    #данні моделі
     MD = []
+    
+    # активний юзер
     USER = 0
 
-    #model error
+    # сигнал про помилка
     error = Signal(str, arguments=['error'])
 
     def __init__(self, conn:str, parent=None):
@@ -23,7 +28,7 @@ class ModelPublishers(QAbstractListModel):
         self.BASE = DataWorker(conn)
         self.loadModel()
 
-
+    # перегрузка базових функцій
     def rowCount(self, parent = None):
         return len(self.MD)
 
@@ -50,6 +55,7 @@ class ModelPublishers(QAbstractListModel):
             self.R_USER:b"_user"
         }
 
+    # загрузка моделі
     def loadModel(self):
         self.beginResetModel()
         self.MD.clear()
@@ -63,18 +69,17 @@ class ModelPublishers(QAbstractListModel):
 
         self.endResetModel()
 
+    # отримати картку
     @Slot(int, result=dict)
     def getCard(self, index:int):
         return self.MD[index]
     
-    @Slot(result=str)
-    def getError(self):
-        return self.ERR
-    
+    # позначити юзера
     @Slot(int)
     def setUser(self, user:int):
         self.USER = user
 
+    # збереження 
     @Slot(dict, result=bool)
     def save(self, card:dict):
         print("USER: ", self.USER)
@@ -92,7 +97,8 @@ class ModelPublishers(QAbstractListModel):
             else:
                 self.error.emit(res['message'])
                 return False
-            
+    
+    # видалення
     @Slot(int, result=bool)
     def deleteCard(self, id:int):
         res = self.BASE.data_del(self.BASE.T_PUBLISHERS, id)

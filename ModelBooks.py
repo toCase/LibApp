@@ -1,3 +1,4 @@
+# модель Книги
 from PySide6.QtCore import QAbstractListModel, QModelIndex, Qt, Slot, Signal, QDateTime
 
 from DataWorker import DataWorker
@@ -5,7 +6,7 @@ from DataWorker import DataWorker
 
 class ModelBooks(QAbstractListModel):
 
-    #role
+    # ролі
     R_ID = Qt.UserRole + 1
     R_NAME = Qt.UserRole + 2
     R_ISBN = Qt.UserRole + 3
@@ -17,13 +18,13 @@ class ModelBooks(QAbstractListModel):
     R_PUBNAME = Qt.UserRole + 9
     R_AUTHORS = Qt.UserRole + 10
 
-    #model data
+    # данні
     MD = []
     USER = 0
-
+    # останній ід для поступового завантаження авторів
     LAST_ID = 0
 
-    #model error
+    # сигнал помилки
     error = Signal(str, arguments=['error'])
 
     def __init__(self, conn:str, parent=None):
@@ -94,10 +95,7 @@ class ModelBooks(QAbstractListModel):
     def getCard(self, index:int):
         return self.MD[index]
     
-    @Slot(result=str)
-    def getError(self):
-        return self.ERR
-    
+    # отримати останній ід
     @Slot(result=int)
     def getLastId(self):
         return self.LAST_ID

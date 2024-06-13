@@ -1,11 +1,18 @@
-from PySide6.QtCore import QAbstractListModel, QModelIndex, Qt, Slot, Signal, QDateTime
+###
+# Клас моделі Библіотека #
+# дані моделі це класичний пітонівський лист з елементами (іменованими словарями)
+# кожна роль відповідає полю словаря, що описується в моделі і через які інтерфейс має до них доступ
+# доступ з боку інтерфейса виконується за допомогою обгортки @Slot
+##
 
+
+from PySide6.QtCore import QAbstractListModel, QModelIndex, Qt, Slot, Signal, QDateTime
 from DataWorker import DataWorker
 
 
 class ModelLib(QAbstractListModel):
 
-    #role
+    #Ролі
     R_ID = Qt.UserRole + 1
     R_BOOK = Qt.UserRole + 2
     R_BOOKNAME = Qt.UserRole + 3
@@ -16,13 +23,16 @@ class ModelLib(QAbstractListModel):
     R_UPD = Qt.UserRole + 8
     R_USER = Qt.UserRole + 9
 
-    #model data
+    #дані моделі
     MD = []
+
+    # активний юзер
     USER = 0
 
-    #model error
+    #сигнал помилки
     error = Signal(str, arguments=['error'])
 
+    #перегружені функції моделі    
     def __init__(self, conn:str, parent=None):
         super().__init__(parent)
         self.BASE = DataWorker(conn)
@@ -70,35 +80,30 @@ class ModelLib(QAbstractListModel):
             self.R_USER:b"_user"
         }
 
+    # загрузка моделі
     def loadModel(self):
         self.beginResetModel()
         self.MD.clear()
-
         db_data = self.BASE.data_get(self.BASE.T_LIBRARY)
-
         if db_data['r']:
             self.MD = db_data['data']
         else:
-            self.error.emit(db_data['message'])
-        
+            self.error.emit(db_data['message'])        
         self.endResetModel()
 
+    # отримати картку моделі
     @Slot(int, result=dict)
     def getCard(self, index:int):
         return self.MD[index]
-    
-    @Slot(result=str)
-    def getError(self):
-        return self.ERR
-    
+
+    # позначити активного юзера
     @Slot(int)
     def setUser(self, user:int):
         self.USER = user
 
+    # збереження даних
     @Slot(dict, result=bool)
     def save(self, card:dict):
-        
-
         if card['reader_id'] == 0:
             self.error.emit("Вкажіть читача")
             return False  
@@ -109,9 +114,6 @@ class ModelLib(QAbstractListModel):
             card['updated'] = QDateTime.currentDateTime().toSecsSinceEpoch()
             card['user_id'] = self.USER
 
-            # print("SAVE LIB: ", card)
-            # return True
-
             res = self.BASE.data_save(self.BASE.T_LIBRARY, card)
             if res['r']:
                 self.loadModel()
@@ -119,7 +121,8 @@ class ModelLib(QAbstractListModel):
             else:
                 self.error.emit(res['message'])
                 return False
-            
+
+    # видалення даних    
     @Slot(int, result=bool)
     def deleteCard(self, id:int):
         res = self.BASE.data_del(self.BASE.T_LIBRARY, id)

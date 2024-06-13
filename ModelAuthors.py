@@ -1,3 +1,4 @@
+# модель Автори
 from PySide6.QtCore import QAbstractListModel, QModelIndex, Qt, Slot, Signal, QDateTime
 
 from DataWorker import DataWorker
@@ -5,7 +6,7 @@ from DataWorker import DataWorker
 
 class ModelAuthors(QAbstractListModel):
 
-    #role
+    #ролі
     R_ID = Qt.UserRole + 1
     R_FAM = Qt.UserRole + 2
     R_NAME = Qt.UserRole + 3
@@ -13,11 +14,11 @@ class ModelAuthors(QAbstractListModel):
     R_USER = Qt.UserRole + 5
     R_FULLNAME = Qt.UserRole + 6
 
-    #model data
+    #данні
     MD = []
     USER = 0
 
-    #model error
+    #сигнал помилки
     error = Signal(str, arguments=['error'])
 
     def __init__(self, conn:str, parent=None):
@@ -25,7 +26,7 @@ class ModelAuthors(QAbstractListModel):
         self.BASE = DataWorker(conn)
         self.loadModel()
 
-
+    # перегружені базові функції
     def rowCount(self, parent = None):
         return len(self.MD)
 
@@ -57,7 +58,8 @@ class ModelAuthors(QAbstractListModel):
             self.R_USER:b"_user",
             self.R_FULLNAME:b"_fullName"
         }
-
+    
+    #загрузка моделі
     def loadModel(self):
         self.beginResetModel()
         self.MD.clear()
@@ -71,18 +73,17 @@ class ModelAuthors(QAbstractListModel):
 
         self.endResetModel()
 
+    # віддаємо карту
     @Slot(int, result=dict)
     def getCard(self, index:int):
         return self.MD[index]
     
-    @Slot(result=str)
-    def getError(self):
-        return self.ERR
-    
+    # позначаємо юзера
     @Slot(int)
     def setUser(self, user:int):
         self.USER = user
 
+    # збереження
     @Slot(dict, result=bool)
     def save(self, card:dict):
         if len(card['name']) == 0:
@@ -102,7 +103,8 @@ class ModelAuthors(QAbstractListModel):
             else:
                 self.error.emit(res['message'])
                 return False
-            
+
+    # видалення      
     @Slot(int, result=bool)
     def deleteCard(self, id:int):
         res = self.BASE.data_del(self.BASE.T_AUTHORS, id)

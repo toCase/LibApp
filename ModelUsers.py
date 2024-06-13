@@ -1,3 +1,7 @@
+# --------
+#  модель Юзера 
+#  ! немає інтерфейсу для обробки
+# ------------
 from PySide6.QtCore import QAbstractListModel, QModelIndex, Qt, Slot, Signal
 
 from DataWorker import DataWorker
@@ -5,16 +9,18 @@ from DataWorker import DataWorker
 
 class ModelUsers(QAbstractListModel):
 
-    #role
+    #ролі
     R_ID = Qt.UserRole + 1
     R_LOGIN = Qt.UserRole + 2
     R_PASS = Qt.UserRole + 3
 
-    #model data
+    # данні
     MD = []
+
+    # активний користувач
     USER = {}
 
-    #model error
+    #сигнал помилки
     error = Signal(str, arguments=['error'])
 
     def __init__(self, conn:str, parent=None):
@@ -63,12 +69,6 @@ class ModelUsers(QAbstractListModel):
         card = self.MD[index]
         return str(card[item])
     
-    
-
-    @Slot(result=str)
-    def getError(self):
-        return self.ERR
-
     @Slot(dict, result=bool)
     def save(self, card:dict):
 
@@ -97,6 +97,7 @@ class ModelUsers(QAbstractListModel):
             self.error.emit(res['message'])
             return False
 
+    # перевірка входу 
     @Slot(str, str, result=bool)
     def logIn(self, login:str, pas:str):
         filters = {'login':login, 'pass':pas}

@@ -1,11 +1,13 @@
+# працює з базою даних
 from PySide6.QtCore import QObject
 from PySide6.QtSql import QSqlDatabase, QSqlQuery
 
 
 class DataWorker(QObject):
-
+    # ідентифікатор підключення
     CON: str
 
+    # таблиці
     T_USERS: int = 30
     T_BOOKS: int = 31
     T_AUTHORS: int = 32
@@ -19,6 +21,7 @@ class DataWorker(QObject):
         self.CON = con
         self.connectDatabase()
 
+    # коннект і створення таблиць
     def connectDatabase(self):
         db = QSqlDatabase.addDatabase('QSQLITE', self.CON)
         db.setDatabaseName("lib.db3")
@@ -41,7 +44,7 @@ class DataWorker(QObject):
                 query.exec()  
 
     
-
+    # збереження даних
     def data_save(self, table:int, card:dict):
         db = QSqlDatabase.database(self.CON)
         if db.isOpen():
@@ -155,7 +158,7 @@ class DataWorker(QObject):
             r = {'r': False, 'message': self.ERR_CON, 'id':0}
         return r
 
-
+    # видалення даних
     def data_del(self, table:int, id:int):
         db = QSqlDatabase.database(self.CON)
         if db.isOpen():
@@ -198,6 +201,7 @@ class DataWorker(QObject):
             r = {'r': False, 'message': self.ERR_CON}
         return r
 
+    # отримання даних
     def data_get(self, table:int, filters:dict = None):
         db = QSqlDatabase.database(self.CON)
         if db.isOpen():
