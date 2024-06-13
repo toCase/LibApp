@@ -11,6 +11,7 @@ class ModelAuthors(QAbstractListModel):
     R_NAME = Qt.UserRole + 3
     R_UPD = Qt.UserRole + 4
     R_USER = Qt.UserRole + 5
+    R_FULLNAME = Qt.UserRole + 6
 
     #model data
     MD = []
@@ -43,6 +44,8 @@ class ModelAuthors(QAbstractListModel):
             r = card['updated']
         if role == self.R_USER:
             r = card['user']
+        if role == self.R_FULLNAME:
+            r = card['fam'] + " " + card['name']
         return r
 
     def roleNames(self):
@@ -51,7 +54,8 @@ class ModelAuthors(QAbstractListModel):
             self.R_FAM:b"_fam",
             self.R_NAME:b"_name",
             self.R_UPD:b"_upd",
-            self.R_USER:b"_user"
+            self.R_USER:b"_user",
+            self.R_FULLNAME:b"_fullName"
         }
 
     def loadModel(self):

@@ -232,8 +232,8 @@ Item {
                 required property int index
                 required property string _readerName
                 required property string _bookName
-                // required property string _start
-                // required property string _fin
+                required property string _startDate
+                required property string _finDate
 
 
                 width: table.width
@@ -278,26 +278,26 @@ Item {
                         horizontalAlignment: Qt.AlignLeft
                         verticalAlignment: Qt.AlignVCenter
                     }
-                    // Label {
-                    //     Layout.fillHeight: true
-                    //     Layout.minimumWidth: 150
-                    //     Layout.maximumWidth: 150
+                    Label {
+                        Layout.fillHeight: true
+                        Layout.minimumWidth: 150
+                        Layout.maximumWidth: 150
 
-                    //     text: _start
-                    //     font.pointSize: 11
-                    //     horizontalAlignment: Qt.AlignLeft
-                    //     verticalAlignment: Qt.AlignVCenter
-                    // }
-                    // Label {
-                    //     Layout.fillHeight: true
-                    //     Layout.minimumWidth: 150
-                    //     Layout.maximumWidth: 150
+                        text: _startDate
+                        font.pointSize: 11
+                        horizontalAlignment: Qt.AlignLeft
+                        verticalAlignment: Qt.AlignVCenter
+                    }
+                    Label {
+                        Layout.fillHeight: true
+                        Layout.minimumWidth: 150
+                        Layout.maximumWidth: 150
 
-                    //     text: _fin
-                    //     font.pointSize: 11
-                    //     horizontalAlignment: Qt.AlignLeft
-                    //     verticalAlignment: Qt.AlignVCenter
-                    // }
+                        text: _finDate
+                        font.pointSize: 11
+                        horizontalAlignment: Qt.AlignLeft
+                        verticalAlignment: Qt.AlignVCenter
+                    }
                 }
                 MouseArea {
                     anchors.fill: parent

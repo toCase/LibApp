@@ -53,7 +53,7 @@ Item {
                     Layout.minimumHeight: implicitHeight
                     Layout.maximumHeight: implicitHeight
 
-                    text: "Authorizathion"
+                    text: "Авторизація"
                     font.pointSize: 15
                     horizontalAlignment: Qt.AlignHCenter
                     verticalAlignment: Qt.AlignVCenter
@@ -71,14 +71,14 @@ Item {
                         id: fLogin
                         Layout.fillHeight: true
                         Layout.fillWidth: true
-                        placeholderText: "LOGIN"
+                        placeholderText: "ЛОГІН"
                         font.pointSize: 13                        
                     }
                     TextField {
                         id: fPass
                         Layout.fillHeight: true
                         Layout.fillWidth: true
-                        placeholderText: "PASSWORD"
+                        placeholderText: "ПАРОЛЬ"
                         font.pointSize: 13                        
                     }
                 }
@@ -92,13 +92,14 @@ Item {
                     Button {
                         Layout.fillHeight: true
                         Layout.fillWidth: true
-                        text: "Cancel"
+                        text: "Відміна"
+                        onClicked: Qt.quit()
                         
                     }
                     Button {
                         Layout.fillHeight: true
                         Layout.fillWidth: true
-                        text: "OK"
+                        text: "Так"
                         onClicked: internal.test()
 
                     }

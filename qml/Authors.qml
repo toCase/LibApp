@@ -34,17 +34,13 @@ Item {
             let r = modelAuthors.save(card)
             if (r) {
                 close()
-            } else {
-                console.log("ERR")
-            }            
+            }         
         }
 
         function del() {
             let r = modelAuthors.deleteCard(idx)
             if (r) {
                 close()
-            } else {
-                console.log("ERR")
             }
         }
 

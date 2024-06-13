@@ -12,9 +12,9 @@ class ModelLib(QAbstractListModel):
     R_READER = Qt.UserRole + 4
     R_READERNAME = Qt.UserRole + 5
     R_START = Qt.UserRole + 6
-    R_FIN = Qt.UserRole + 6
-    R_UPD = Qt.UserRole + 7
-    R_USER = Qt.UserRole + 8
+    R_FIN = Qt.UserRole + 7
+    R_UPD = Qt.UserRole + 8
+    R_USER = Qt.UserRole + 9
 
     #model data
     MD = []
@@ -64,8 +64,8 @@ class ModelLib(QAbstractListModel):
             self.R_BOOKNAME:b"_bookName",
             self.R_READER:b"_reader_id",
             self.R_READERNAME:b"_readerName",
-            self.R_START:b"_start",
-            self.R_FIN:b"_fin",
+            self.R_START:b"_startDate",
+            self.R_FIN:b"_finDate",
             self.R_UPD:b"_upd",
             self.R_USER:b"_user"
         }
@@ -97,7 +97,7 @@ class ModelLib(QAbstractListModel):
 
     @Slot(dict, result=bool)
     def save(self, card:dict):
-        print("SAVE LIB: ", card)
+        
 
         if card['reader_id'] == 0:
             self.error.emit("Вкажіть читача")
@@ -108,6 +108,9 @@ class ModelLib(QAbstractListModel):
         else:
             card['updated'] = QDateTime.currentDateTime().toSecsSinceEpoch()
             card['user_id'] = self.USER
+
+            # print("SAVE LIB: ", card)
+            # return True
 
             res = self.BASE.data_save(self.BASE.T_LIBRARY, card)
             if res['r']:

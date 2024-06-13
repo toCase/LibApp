@@ -33,7 +33,7 @@ class DataWorker(QObject):
                 "CREATE TABLE IF NOT EXISTS BookAuthors (id INTEGER PRIMARY KEY AUTOINCREMENT, book_id INTEGR, author_id INTEGER) ",
                 '''CREATE TABLE IF NOT EXISTS Readers (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, fam TEXT, 
                 faculty TEXT, department TEXT, position TEXT, updated INTEGER, user_id INTEGER) ''',
-                '''CREATE TABLE IF NOT EXISTS Lib (id INTEGER PRIMARY KEY AUTOINCREMENT, reader_id INTEGER, book_id, 
+                '''CREATE TABLE IF NOT EXISTS Lib (id INTEGER PRIMARY KEY AUTOINCREMENT, reader_id INTEGER, book_id INTEGER, 
                 start TEXT, fin TEXT, updated INTEGER, user_id INTEGER) ''',
             ]
             for q in qstr:
@@ -179,7 +179,7 @@ class DataWorker(QObject):
                     query = QSqlQuery(qstr, db)
 
             if table == self.T_BOOKAUTHORS:
-                qstr = f"DELETE FROM BookAuthors WHERE Books.id = {id}"
+                qstr = f"DELETE FROM BookAuthors WHERE BookAuthors.book_id = {id}"
                 query = QSqlQuery(qstr, db)
 
             if table == self.T_READERS:
@@ -216,6 +216,8 @@ class DataWorker(QObject):
                 if filters:
                     if 'name' in filters:
                         qstr = qstr + f"AND (Authors.`name` LIKE \'%{filters['name']}%\') "
+                    if 'id' in filters:
+                        qstr = qstr + f"AND (Authors.`id` = \'{filters['id']}\') "
                 qstr = qstr + "ORDER BY Authors.fam, Authors.name "
 
             if table == self.T_PUBLISHERS:
@@ -226,7 +228,12 @@ class DataWorker(QObject):
                 qstr = qstr + "ORDER BY Publishers.name "
 
             if table == self.T_BOOKS:
-                qstr = "SELECT b.*, p.name AS pubName FROM Books AS b INNER JOIN Publishers AS p ON p.id = b.publisher_id WHERE (b.id > \'0\') "
+                qstr = '''SELECT b.*, p.name AS pubName, GROUP_CONCAT(Authors.fam || ' ' || Authors.name) AS authors
+                FROM Books AS b 
+                INNER JOIN Publishers AS p ON p.id = b.publisher_id 
+                JOIN BookAuthors ON b.id = BookAuthors.book_id
+                JOIN Authors ON BookAuthors.author_id = Authors.id
+                WHERE (b.id > \'0\') '''
                 if filters:
                     if 'name' in filters:
                         qstr = qstr + f"AND (b.`name` LIKE \'%{filters['name']}%\') "
@@ -235,7 +242,7 @@ class DataWorker(QObject):
                     if 'writed' in filters:
                         qstr = qstr + f"AND (b.`writed` LIKE \'%{filters['writed']}%\') "
                     
-                qstr = qstr + "ORDER BY b.name "
+                qstr = qstr + "GROUP BY b.id ORDER BY b.name "
             
             if table == self.T_READERS:
                 qstr = "SELECT * FROM Readers WHERE (Readers.id > \'0\') "
@@ -256,7 +263,7 @@ class DataWorker(QObject):
             if table == self.T_LIBRARY:
                 qstr = '''SELECT l.*, r.name AS readerName, r.fam AS readerFam, b.name AS bookName FROM Lib AS l 
                 INNER JOIN Readers AS r ON r.id = l.reader_id 
-                INNER JOIN Books AS b ON b.id - l.book_id 
+                INNER JOIN Books AS b ON b.id = l.book_id 
                 WHERE (l.id > \'0\') '''
                 if filters:
                     if 'reader_id' in filters:
@@ -269,6 +276,16 @@ class DataWorker(QObject):
                         qstr = qstr + f"AND (l.`fin` = \'{filters['fin']}\') "
 
                 qstr = qstr + "ORDER BY l.id "
+            
+            if table == self.T_BOOKAUTHORS:
+                qstr = ''' SELECT ba.*, a.fam AS authorFam, a.name AS authorName  
+                FROM BookAuthors AS ba 
+                INNER JOIN Authors AS a ON a.id = ba.author_id 
+                WHERE (ba.id > \'0\') '''
+                if filters:
+                    if 'book_id' in filters:
+                        qstr = qstr + f"AND (ba.book_id = \'{filters['book_id']}\') "
+                
 
             data = []
             query = QSqlQuery(qstr, db)
@@ -277,14 +294,19 @@ class DataWorker(QObject):
                 card = {}
                 for i in range(0, query.record().count()):
                     field = query.record().field(i)
-                    card[field.name()] = query.value(i)
+
+                    if table == self.T_BOOKAUTHORS and field.name() == 'id':
+                        card['id'] = 0
+                    else:
+                        card[field.name()] = query.value(i)
                 data.append(card)
+                    
 
             if query.exec():
                 r = {'r': True, 'message': "", 'data':data}
-            else:
-                print(query.lastQuery())
+            else:                
                 r = {'r': False, 'message': query.lastError().text(), 'data':[]}
+                print(query.lastQuery())
         else:
             r = {'r': False, 'message': self.ERR_CON, 'data':[]}
         return r

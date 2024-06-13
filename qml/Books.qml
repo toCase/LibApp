@@ -3,50 +3,67 @@ import QtQuick.Layouts
 import QtQuick.Controls.Basic
 
 Item {
-    id: authors
+    id: books
+
+    signal error(message: string)
 
     QtObject {
         id: internal
 
         property int idx: 0
+        property int idxA: 0
 
         function add() {
             idx = 0;
-            form_name.clear()
-            form_isbn.clear()
-            form_publisher.currentIndex = -1
-            form_writed.clear()
-            form_anot.clear()
-
+            form_name.clear();
+            form_isbn.clear();
+            form_publisher.currentIndex = -1;
+            form_writed.clear();
+            form_anot.clear();
+            modelBA.setBook(idx);
             form.visible = true;
         }
 
         function edit(index) {
             let card = modelBooks.getCard(index);
             idx = card['id'];
-            form_name.text = card['name']
-            form_isbn.text = card['isbn']
-            form_publisher.currentIndex = form_publisher.find(card['pubName'])
-            form_writed.text = card['writed']
-            form_anot.text = card['anotation']
-
+            form_name.text = card['name'];
+            form_isbn.text = card['isbn'];
+            form_publisher.currentIndex = form_publisher.find(card['pubName']);
+            form_writed.text = card['writed'];
+            form_anot.text = card['anotation'];
+ 
+            modelBA.setBook(idx)
+            
             form.visible = true;
         }
 
         function save() {
-            let card = {};
-            card['id'] = idx
-            card['name'] = form_name.text
-            card['isbn'] = form_isbn.text
-            card['publisher_id'] = form_publisher.currentValue
-            card['writed'] = form_writed.text
-            card['anotation'] = form_anot.text
+            let countAuthors = modelBA.rowCount()
+            if (countAuthors == 0){
+                books.error("Оберіть автора")
+            } else {            
+                let card = {};
+                card['id'] = idx;
+                card['name'] = form_name.text;
+                card['isbn'] = form_isbn.text;
+                card['publisher_id'] = form_publisher.currentValue;
+                card['writed'] = form_writed.text;
+                card['anotation'] = form_anot.text;
+                let r = modelBooks.save(card);
+                if (r) {
+                    let book_id = modelBooks.getLastId()
 
-            let r = modelBooks.save(card);
-            if (r) {
-                close();
-            } else {
-                console.log("ERR");
+                    console.log("LAST ID: ", book_id)
+
+                    let res = modelBA.save(book_id)
+
+                    if (res) {
+                        modelBooks.loadModel()
+                        close();
+                    } 
+                    
+                } 
             }
         }
 
@@ -59,8 +76,29 @@ Item {
             }
         }
 
+        function addAuthor() {
+            idxA = 0;
+            form_author.currentIndex = 0;
+            form_ba.visible = true;
+        }
+
+        function delAuthor(index) {
+
+            modelBA.delAuthor(index)
+            form_ba.visible = false
+        }
+
+        function selectAuthor(index) {
+            form_ba.visible = false
+        }
+
+        function saveAuthor() {
+            modelBA.addAuthor(form_author.currentValue);
+            form_ba.visible = false
+        }
+
         function close() {
-            form.visible = false;
+            form.visible = false
         }
     }
 
@@ -195,10 +233,10 @@ Item {
                     spacing: 10
 
                     ColumnLayout {
-                        
+
                         Layout.fillHeight: true
-                        Layout.minimumWidth: form.width * 0.45
-                        Layout.maximumWidth: form.width * 0.45
+                        Layout.minimumWidth: form.width * 0.48
+                        Layout.maximumWidth: form.width * 0.48
                         spacing: 5
 
                         Label {
@@ -220,13 +258,11 @@ Item {
                             }
 
                             wrapMode: TextEdit.WordWrap
-
                         }
-
                     }
                     ColumnLayout {
-                        Layout.minimumWidth: form.width * 0.45
-                        Layout.maximumWidth: form.width * 0.45
+                        Layout.minimumWidth: form.width * 0.48
+                        Layout.maximumWidth: form.width * 0.48
                         Layout.fillHeight: true
                         spacing: 5
 
@@ -235,6 +271,14 @@ Item {
                             Layout.maximumHeight: 40
                             Layout.fillWidth: true
                             spacing: 5
+                            
+                            Label {
+                                Layout.fillHeight: true
+                                Layout.fillWidth: true
+                                text: "Автори:"
+                                font.pointSize: 13
+                                verticalAlignment: Qt.AlignVCenter
+                            }
 
                             Button {
                                 Layout.fillHeight: true
@@ -242,23 +286,15 @@ Item {
                                 Layout.maximumWidth: 40
 
                                 text: "+"
-                                onClicked: console.log("ADD AUTH")
-                            }
-                            Button {
-                                Layout.fillHeight: true
-                                Layout.minimumWidth: 40
-                                Layout.maximumWidth: 40
-
-                                text: "-"
-                                onClicked: console.log("DEL AUTH")
+                                onClicked: internal.addAuthor()
                             }
                         }
 
                         Pane {
                             id: form_ba
                             visible: false
-                            Layout.minimumHeight: 40
-                            Layout.maximumHeight: 40
+                            Layout.minimumHeight: 55
+                            Layout.maximumHeight: 55
                             Layout.fillWidth: true
 
                             RowLayout {
@@ -270,7 +306,7 @@ Item {
                                     Layout.fillHeight: true
                                     Layout.fillWidth: true
                                     model: modelAuthors
-                                    textRole: "_fam" + " " + "_name" 
+                                    textRole: "_fullName"
                                     valueRole: "_id"
                                 }
                                 Button {
@@ -278,7 +314,7 @@ Item {
                                     Layout.minimumWidth: 120
                                     Layout.maximumWidth: 120
                                     text: "Зберегти"
-
+                                    onClicked: internal.saveAuthor()
                                 }
                             }
                         }
@@ -289,17 +325,46 @@ Item {
                             Layout.fillWidth: true
 
                             clip: true
-                            model: []
+                            model: modelBA
                             delegate: Rectangle {
+                                id: rec
+                                required property int index
+                                required property string _authorName
 
                                 width: table_ba.width
-                                height: 35
+                                height: 40
 
                                 color: "transparent"
-                            }
-                            ScrollBar.vertical: ScrollBar{}
-                        }
+                                
+                                RowLayout {
+                                    anchors.fill: parent
+                                    spacing: 0
 
+                                    Label {
+                                        Layout.fillWidth: true
+                                        Layout.fillHeight: true
+
+                                        text: _authorName
+                                        font.pointSize: 13
+
+                                        horizontalAlignment: Qt.AlignLeft
+                                        verticalAlignment: Qt.AlignVCenter
+
+                                        
+                                    }
+                                    Button {
+                                        Layout.fillHeight: true
+                                        Layout.minimumWidth: 40
+                                        Layout.maximumWidth: 40
+
+                                        text: "-"
+                                        onClicked: internal.delAuthor(index)
+                                    }
+                                }
+                                
+                            }
+                            ScrollBar.vertical: ScrollBar {}
+                        }
                     }
                 }
 
@@ -350,6 +415,7 @@ Item {
 
                 required property int index
                 required property string _name
+                required property string _authors
                 required property string _writed
 
                 width: table.width
@@ -370,6 +436,17 @@ Item {
                         Layout.maximumWidth: 40
 
                         text: index + 1
+                        font.pointSize: 11
+                        horizontalAlignment: Qt.AlignLeft
+                        verticalAlignment: Qt.AlignVCenter
+                    }
+
+                    Label {
+                        Layout.fillHeight: true
+                        Layout.minimumWidth: 250
+                        Layout.maximumWidth: 250
+
+                        text: _authors
                         font.pointSize: 11
                         horizontalAlignment: Qt.AlignLeft
                         verticalAlignment: Qt.AlignVCenter

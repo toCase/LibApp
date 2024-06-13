@@ -33,18 +33,14 @@ Item {
             let r = modelPublishers.save(card)
             if (r) {
                 close()
-            } else {
-                console.log("ERR")
-            }            
+            }        
         }
 
         function del() {
             let r = modelPublishers.deleteCard(idx)
             if (r) {
                 close()
-            } else {
-                console.log("ERR")
-            }
+            } 
         }
 
         function close() {

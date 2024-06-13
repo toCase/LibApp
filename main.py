@@ -10,6 +10,7 @@ import ModelAuthors
 import ModelBooks
 import ModelReaders
 import ModelLib
+import ModelBookAuthors
 
 if __name__ == "__main__":
 
@@ -34,6 +35,9 @@ if __name__ == "__main__":
 
     modelLibrary = ModelLib.ModelLib("LIB")
     engine.rootContext().setContextProperty("modelLibrary", modelLibrary)
+
+    modelBA = ModelBookAuthors.ModelBookAuthors("BA")
+    engine.rootContext().setContextProperty("modelBA", modelBA)
 
     engine.load(qml_file)
     if not engine.rootObjects():
